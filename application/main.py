@@ -1,6 +1,13 @@
 from tkinter import *
 from fonctions import *
 
+
+def send_request():
+    print("Request sent!")
+    url = url_entry.get()
+    print(f"URL: {url}")
+
+
 app  = Tk()
 app.title("Application name")
 app.geometry("800x600")
@@ -27,8 +34,13 @@ request_listbox = Listbox( frame_requete, fg = "black", bg="#FFFFFF", font = ("A
 request_listbox.pack( side=LEFT, fill=BOTH, padx=10, pady=10 )
 
 
-url = Entry( frame_requete , fg = "black", bg="#B13636", font = ("Arial", 20), width=40 )
-url.pack( side=LEFT, padx=10, pady=10 )
+url_entry = Entry( frame_requete , fg = "black", bg="#B13636", font = ("Arial", 20), width=40 )
+url_entry.pack( side=LEFT, padx=10, pady=10 )
+
+url = url_entry.get()
+print(url)
+
+
 
 send_button = Button(frame_requete , text = "Send" , fg = "black", bg="#D3D3D3", font = ("Arial", 20), command=send_request )
 send_button.pack( side=LEFT, padx=10, pady=10 )
