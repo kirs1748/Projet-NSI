@@ -1,5 +1,6 @@
 from tkinter import *
 from api import ApiClient
+from fonctions import *
 
 
 class App :
@@ -16,6 +17,14 @@ class App :
         self.response_text = None
         self.status_code = None
 
+        # Stockage des différentes parties de la réponse à la requête
+        self.response_data = {
+            "html": "",
+            "headers": "",
+            "cookies": "",
+            "status": None
+        }
+
         # Interface
         self.build_ui()
 
@@ -23,7 +32,7 @@ class App :
         # Configuration de la grille générale
         self.root.grid_rowconfigure(0, weight=0)  # header
         self.root.grid_rowconfigure(1, weight=0)  # requete
-        self.root.grid_rowconfigure(2, weight=0)  # paramètres
+        self.root.grid_rowconfigure(2, weight=1)  # paramètres
         self.root.grid_rowconfigure(3, weight=0)  # réponse
         self.root.grid_columnconfigure(0, weight=1)
 
@@ -59,20 +68,23 @@ class App :
         #Frame pour les paramètres
         self.frame_params = Frame( self.root, bg = "#FF00D9" )
         self.frame_params.grid(row=2, column=0, sticky="nsew")
-
         params_label = Label( self.frame_params , text = "Parameters:" , fg = "black", bg="#005EFF", font = ("Arial", 20))
         params_label.pack(side=TOP, padx=10, pady=10 )
 
 
 
         #Frame pour la réponse
-        self.frame_reponse = Frame( self.root, bg = "#7C6363" )
-        self.frame_reponse.grid(row=3, column=0, sticky="nsew")
+        self.frame_reponse = Frame( self.root, bg = "#7C6363", borderwidth=5, relief="groove" )
+        self.frame_reponse.grid(row=3, column=0, sticky="sew")
 
 
         response_label = Label( self.frame_reponse , text = "Response:" , fg = "black", bg="#FFFFFF", font = ("Arial", 20))
         response_label.pack( side=TOP, padx=10, pady=10 )
-        self.response_text = Message( self.frame_reponse , text = "" , fg = "black", bg="#FFFFFF", font = ("Arial", 14), width=1000 )
+
+        self.view_mode = StringVar(value="HTML")
+        self.view_menu = OptionMenu( self.frame_reponse , self.view_mode , "HTML" , "Headers" , "Cookies" , command=self.update_response_view )
+        self.view_menu.pack( side=TOP, padx=10, pady=10 )
+        self.response_text = Text( self.frame_reponse , fg = "black", bg="#D3D3D3", font = ("Arial", 12), height=15 )
         self.response_text.pack( side=TOP, padx=10, pady=10 )
 
 
@@ -93,11 +105,24 @@ class App :
         url = self.url_entry.get()
         print("metode GET")
         status_code, response_content , response_headers, response_cookies = self.api.get(url)
-        print(f"Status Code: {status_code}")
-        #print(f"Response Text: {response_content}")
-        print(f"Response Headers: {response_headers}")
-        #print(f"Response JSON: {response_json}")
-        #print(f"Response Cookies: {response_cookies}")
+        response_content = parse_html( response_content )
+
+        self.response_data["html"] = response_content
+        self.response_data["headers"] = "\n".join(f"{k}: {v}" for k, v in response_headers.items())
+        self.response_data["cookies"] = "\n".join(f"{k}: {v}" for k, v in response_cookies.items())
+
+        self.update_response_view(self.view_mode.get())
+
+    def update_response_view(self , mode):
+        self.response_text.delete("1.0", END)
+
+        if mode == "HTML":
+            self.response_text.insert(END, self.response_data["html"])
+            pass
+        elif mode == "Headers":
+            self.response_text.insert(END, self.response_data["headers"])
+        elif mode == "Cookies":
+            print("Mode Cookies sélectionné")
 
 
     def send_post_request(self):
