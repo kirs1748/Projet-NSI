@@ -74,7 +74,7 @@ class App :
         self.header_frame.grid(row=0, column=0, sticky="nsew")
         self.menubar = Menu( self.header_frame )
         self.menubar.add_command( label = "Requetes", command= lambda: print("Requete clicked"))
-        self.menubar.add_command( label = "Bruteforce", command= lambda: messagebox.showinfo("Bouton Bruteforce") )
+        self.menubar.add_command( label = "Automatisation", command= lambda: self.open_automatisation_window() )
         self.root.config( menu = self.menubar )
         self.app_title = Label( self.header_frame , text = "Nom de l'application" , fg = "black", bg="#FFFFFF", font = ("Impact", 30))
         self.app_title.pack( side=TOP, padx=20, pady=20 )
@@ -195,7 +195,7 @@ class App :
         elif method == "PUT":
             self.send_put_request(url, data)
         elif method == "DELETE":
-            self.send_delete_request()
+            self.send_delete_request(url, data)
         
 
 
@@ -223,7 +223,6 @@ class App :
     def send_post_request(self, url, data=None):
         status_code, response_content , response_headers, response_cookies = self.api.post(url, params=data["query"], headers=data["headers"], query=data["body"])
 
-        print(status_code)
         self.response_data["status"] = status_code
         self.response_data["html"] = response_content
         self.response_data["headers"] = "\n".join(f"{k}: {v}" for k, v in response_headers.items())
@@ -236,11 +235,30 @@ class App :
 
 
 
-    def send_put_request(self):
-        print("metode PUT")
+    def send_put_request(self, url, data=None):
+        status_code, response_content , response_headers, response_cookies = self.api.put(url, params=data["query"], headers=data["headers"], query=data["body"])
 
-    def send_delete_request(self):
-        print("metode DELETE")
+        self.response_data["status"] = status_code
+        self.response_data["html"] = response_content
+        self.response_data["headers"] = "\n".join(f"{k}: {v}" for k, v in response_headers.items())
+        self.response_data["cookies"] = "\n".join(f"{k}: {v}" for k, v in response_cookies.items())
+
+        self.update_response_view(self.view_mode.get())
+
+
+
+
+    # Gestion des requêtes DELETE, aucune valeur n'est demandée dans l'application, juste besoin de key
+    def send_delete_request(self, url, data=None):
+        status_code, response_content , response_headers, response_cookies = self.api.delete(url, params=data["query"], headers=data["headers"], query=data["body"])
+
+        self.response_data["status"] = status_code
+        self.response_data["html"] = response_content
+        self.response_data["headers"] = "\n".join(f"{k}: {v}" for k, v in response_headers.items())
+        self.response_data["cookies"] = "\n".join(f"{k}: {v}" for k, v in response_cookies.items())
+
+        self.update_response_view(self.view_mode.get())
+        
 
 
 
@@ -267,3 +285,31 @@ class App :
             self.response_text.delete("1.0", END)
             self.response_text.insert(END, self.response_data["cookies"])
             self.response_text.config(state="disabled")
+
+
+    
+
+
+
+
+    # Gestion de la fenêtre d'automatisation
+    def open_automatisation_window(self):
+        self.automatisationWindow(self.root, self.api)
+
+
+
+    def automatisationWindow(self, parent, api):
+        self.top = Toplevel(parent)
+        self.top.title("Automatisation")
+        self.top.state('zoomed')
+        self.api = api
+
+
+
+        label = Label(self.top, text="Automatisation des requêtes", font=("Arial", 16))
+        label.pack(pady=20)
+
+        # Ajouter ici les éléments de l'interface pour l'automatisation
+
+        close_button = ttk.Button(self.top, text="Fermer", command=self.top.destroy)
+        close_button.pack(pady=10)
