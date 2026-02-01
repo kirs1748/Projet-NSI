@@ -79,3 +79,24 @@ class ScrollableKeyValueFrame(ttk.Frame):
             if key:
                 data[key] = value
         return data
+    
+    def clear(self):
+        for row in self.rows:
+            row["key"].destroy()
+            row["value"].destroy()
+            row["button"].destroy()
+        self.rows.clear()
+
+    def load_data(self, data):
+        self.clear()
+
+        for key, value in data.items():
+            self.add_row_with_data(key, value)
+
+        # Toujours une ligne vide à la fin
+        self.add_row()
+
+    def add_row_with_data(self, key, value):
+        self.add_row()
+        self.rows[-1]["key"].insert(0, key)
+        self.rows[-1]["value"].insert(0, value)

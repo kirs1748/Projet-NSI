@@ -16,7 +16,27 @@ class App :
         # Backend
         self.api = ApiClient()
 
-        # Données de l'application
+        self.style = ttk.Style(self.root)
+        #importer un thème
+        theme_path = os.path.join(os.path.dirname(__file__), "black.tcl")
+        root.tk.call("source", theme_path)
+        self.style.theme_use('vista')
+        #self.style.configure('TButton', font=('Arial', 12), padding=6)
+
+
+
+
+
+        self.current_param_type = "query"
+        # Stockage des paramètres de la requête
+        self.params = {
+            "query": {},    # params=...
+            "headers": {},  # headers=...
+            "body": {}      # data=... ou json=...
+        }
+
+
+         # Données de l'application
         self.response_text = ""
         self.status_code = ""
         
@@ -28,22 +48,14 @@ class App :
             "cookies": ""
         }
 
-        self.style = ttk.Style(self.root)
-        #importer un thème
-        theme_path = os.path.join(os.path.dirname(__file__), "black.tcl")
-        root.tk.call("source", theme_path)
-        self.style.theme_use('vista')
-        #self.style.configure('TButton', font=('Arial', 12), padding=6)
-
-        # Stockage des paramètres de la requête
-        self.params = {
-            "query": {},    # params=...
-            "headers": {},  # headers=...
-            "body": {}      # data=... ou json=...
-        }
-
         # Interface
         self.build_ui()
+
+
+
+
+
+
 
 
 
@@ -61,7 +73,8 @@ class App :
         self.header_frame = Frame( self.root, bg = "#FFFFFF" )
         self.header_frame.grid(row=0, column=0, sticky="nsew")
         self.menubar = Menu( self.header_frame )
-        self.menubar.add_command( label = "Automatisation", command= lambda: print("Automatisation clicked"))
+        self.menubar.add_command( label = "Requetes", command= lambda: print("Requete clicked"))
+        self.menubar.add_command( label = "Bruteforce", command= lambda: messagebox.showinfo("Bouton Bruteforce") )
         self.root.config( menu = self.menubar )
         self.app_title = Label( self.header_frame , text = "Nom de l'application" , fg = "black", bg="#FFFFFF", font = ("Impact", 30))
         self.app_title.pack( side=TOP, padx=20, pady=20 )
@@ -86,6 +99,10 @@ class App :
         self.send_button.grid(row=0, column=2, padx=10, pady=10,sticky="w")
 
 
+
+
+
+
         #Frame pour les paramètres
         self.frame_params = Frame( self.root, bg = "#FF00D9" )
         self.frame_params.grid(row=2, column=0, sticky="nsew")
@@ -95,6 +112,11 @@ class App :
 
         params_label = Label( self.frame_params , text = "Parameters:" , fg = "black", bg="#005EFF", font = ("Arial", 20))
         params_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+
+        self.choix_param = StringVar(value="Query")
+        self.menu_param = ttk.OptionMenu( self.frame_params , self.choix_param , "Query" ,"Query", "Body" , "Headers", command=lambda value: self.change_param_type(value) )
+        self.menu_param.grid(row=0, column=1, padx=10, pady=10, sticky="w")
         self.params_table = ScrollableKeyValueFrame(self.frame_params, height=220)
         self.params_table.grid(row=1, column=0, sticky="nsew", padx=10)
 
@@ -105,8 +127,11 @@ class App :
         self.response_label = Label( self.frame_reponse , text = f"Response: {self.status_code}" , fg = "black", bg="#FFFFFF", font = ("Arial", 20))
         self.response_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
-        # Configuration de la grille de la frame réponse
 
+
+
+
+        # Configuration de la grille de la frame réponse
         self.frame_reponse.grid_rowconfigure(0, weight=0)
         self.frame_reponse.grid_rowconfigure(1, weight=1)
         self.frame_reponse.grid_rowconfigure(2, weight=1)
@@ -122,26 +147,62 @@ class App :
         self.response_text = Text( self.frame_reponse , fg = "black", bg="#D3D3D3", font = ("Arial", 12), height=8)
         self.response_text.grid(row=0, column=1, columnspan=2,rowspan=2,  padx=10, pady=10, sticky="nsew")
 
+    
 
+
+
+
+    def change_param_type(self , value):
+
+        new_type = value.lower()
+
+        # 1️⃣ Sauvegarder l'ancien
+        self.params[self.current_param_type] = self.params_table.get_data()
+
+        # 2️⃣ Changer le type courant
+        self.current_param_type = new_type
+
+        # 3️⃣ Charger le nouveau
+        self.params_table.load_data(self.params[new_type])
+    
+    
+    def prepare_request_data(self):
+        """
+        Prépare les données à envoyer à l'API
+        en fonction des paramètres saisis
+        """
+        return {
+            "query": self.params["query"],
+            "headers": self.params["headers"],
+            "body": self.params["body"]
+        }
+    
+
+
+
+
+    
     # Gestion des requêtes
     def send_request(self):
+        self.params[self.current_param_type] = self.params_table.get_data()
         method = self.choix_requete.get()
+        url = self.url_entry.get()
+        data = self.prepare_request_data()
         if method == "GET":
-            self.send_get_request()
+            self.send_get_request(url, data)
         elif method == "POST":
-            self.send_post_request()
+            self.send_post_request(url, data)
         elif method == "PUT":
-            self.send_put_request()
+            self.send_put_request(url, data)
         elif method == "DELETE":
             self.send_delete_request()
         
 
 
     # Gestion des requêtes GET
-    def send_get_request(self):
-        url = self.url_entry.get()
-        data = {}
-        status_code, response_content , response_headers, response_cookies = self.api.get(url, data)
+    def send_get_request(self, url, data=None):
+
+        status_code, response_content , response_headers, response_cookies = self.api.get(url, params=data["query"], headers=data["headers"])
         response_content = parse_html( response_content )
         
 
@@ -158,11 +219,9 @@ class App :
 
 
 
-
-    def send_post_request(self):
-        url = self.url_entry.get()
-        data = {"email" : "toto@gmail.com", "password": "123456789"}  # Récupérer les données des paramètres ici
-        status_code, response_content , response_headers, response_cookies = self.api.post(url, data)
+    # Gestion des requêtes POST
+    def send_post_request(self, url, data=None):
+        status_code, response_content , response_headers, response_cookies = self.api.post(url, params=data["query"], headers=data["headers"], query=data["body"])
 
         print(status_code)
         self.response_data["status"] = status_code
@@ -173,6 +232,10 @@ class App :
         self.update_response_view(self.view_mode.get())
 
     
+
+
+
+
     def send_put_request(self):
         print("metode PUT")
 
