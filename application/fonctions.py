@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import tkinter as tk
 from tkinter import ttk
 
+
+#transformer le contenu HTML en texte
 def parse_html(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
     return soup.prettify()

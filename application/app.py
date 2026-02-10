@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+#from tkinter import scrolledtext
 from tkinter import ttk
 from api import ApiClient
 from fonctions import *
@@ -70,17 +71,17 @@ class App :
         self.root.grid_columnconfigure(0, weight=1)
 
         # Frame pour l'en-tête
-        self.header_frame = Frame( self.root, bg = "#FFFFFF" )
+        self.header_frame = Frame( self.root, bg = "#909090" )
         self.header_frame.grid(row=0, column=0, sticky="nsew")
         self.menubar = Menu( self.header_frame )
         self.menubar.add_command( label = "Requetes", command= lambda: print("Requete clicked"))
         self.menubar.add_command( label = "Automatisation", command= lambda: self.open_automatisation_window() )
         self.root.config( menu = self.menubar )
-        self.app_title = Label( self.header_frame , text = "Nom de l'application" , fg = "black", bg="#FFFFFF", font = ("Impact", 30))
+        self.app_title = Label( self.header_frame , text = "Nom de l'application" , fg = "black", bg="#909090", font = ("Impact", 30))
         self.app_title.pack( side=TOP, padx=20, pady=20 )
 
         # Frame pour les requêtes
-        self.frame_requete = Frame( self.root, bg = "#00FF22", pady=10 )
+        self.frame_requete = Frame( self.root, bg = "#909090", pady=10 )
         self.frame_requete.grid(row=1, column=0, sticky="nsew")
         #Configuration de la grille de la frame requête
         self.frame_requete.grid_columnconfigure(0, weight=1)
@@ -92,7 +93,10 @@ class App :
         self.option_menu = ttk.OptionMenu( self.frame_requete , self.choix_requete , "GET" ,"GET", "POST" , "PUT" , "DELETE" )
         self.option_menu.grid(row=0, column=0, padx=3, pady=10, sticky="e")
         # Champ d'entrée pour l'URL
-        self.url_entry = Entry( self.frame_requete , fg = "black", bg="#B13636", font = ("Arial", 20), width=40 )
+
+        #self.url_entry_var = StringVar()
+        #self.url_entry_var.set("https://api.example.com/resource")
+        self.url_entry = Entry( self.frame_requete , fg = "black", bg="#FFFFFF", font = ("Arial", 20), width=40)
         self.url_entry.grid(row=0, column=1, padx=10, pady=10)
         # Bouton pour envoyer la requête
         self.send_button = ttk.Button(self.frame_requete , text = "send",style="TButton",  command=lambda: self.send_request())
@@ -104,13 +108,13 @@ class App :
 
 
         #Frame pour les paramètres
-        self.frame_params = Frame( self.root, bg = "#FF00D9" )
+        self.frame_params = Frame( self.root, bg = "#909090" )
         self.frame_params.grid(row=2, column=0, sticky="nsew")
 
         self.frame_params.grid_rowconfigure(1, weight=1)
         self.frame_params.grid_columnconfigure(0, weight=1)
 
-        params_label = Label( self.frame_params , text = "Parameters:" , fg = "black", bg="#005EFF", font = ("Arial", 20))
+        params_label = Label( self.frame_params , text = "Parameters:" , fg = "black", bg="#909090", font = ("Arial", 20))
         params_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
 
@@ -122,7 +126,7 @@ class App :
 
         ttk.Button(self.frame_params, text="Ajouter un paramètre",command=self.params_table.add_row).grid(row=2, column=0, pady=5)
         #Frame pour la réponse
-        self.frame_reponse = Frame( self.root, bg = "#7C6363", borderwidth=5, relief="groove" )
+        self.frame_reponse = Frame( self.root, bg = "#909090", borderwidth=5, relief="groove" )
         self.frame_reponse.grid(row=3, column=0, sticky="sew")
         self.response_label = Label( self.frame_reponse , text = f"Response: {self.status_code}" , fg = "black", bg="#FFFFFF", font = ("Arial", 20))
         self.response_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
@@ -144,7 +148,7 @@ class App :
         self.view_mode = StringVar(value="HTML")
         self.view_menu = ttk.OptionMenu( self.frame_reponse , self.view_mode , "HTML" ,"HTML", "Headers" , "Cookies" , command=self.update_response_view )
         self.view_menu.grid(row=1, column=0, padx=10, pady=10, sticky="w")
-        self.response_text = Text( self.frame_reponse , fg = "black", bg="#D3D3D3", font = ("Arial", 12), height=8)
+        self.response_text = Text( self.frame_reponse , fg = "black", bg="#C0C0C0", font = ("Arial", 12), height=8)
         self.response_text.grid(row=0, column=1, columnspan=2,rowspan=2,  padx=10, pady=10, sticky="nsew")
 
     
@@ -221,7 +225,7 @@ class App :
 
     # Gestion des requêtes POST
     def send_post_request(self, url, data=None):
-        status_code, response_content , response_headers, response_cookies = self.api.post(url, params=data["query"], headers=data["headers"], query=data["body"])
+        status_code, response_content , response_headers, response_cookies, longueur = self.api.post(url, params=data["query"], headers=data["headers"], query=data["body"])
 
         self.response_data["status"] = status_code
         self.response_data["html"] = response_content
@@ -292,9 +296,22 @@ class App :
 
 
 
+
+
+
+
+
+
+
+
+
     # Gestion de la fenêtre d'automatisation
     def open_automatisation_window(self):
         self.automatisationWindow(self.root, self.api)
+
+
+
+
 
 
 
@@ -304,12 +321,95 @@ class App :
         self.top.state('zoomed')
         self.api = api
 
+        self.top.grid_rowconfigure(0, weight=0)
+        self.top.grid_rowconfigure(1, weight=0)
+        self.top.grid_rowconfigure(2, weight=1)
+
+        # Frame pour l'en-tête de la fenêtre d'automatisation
+        self.bruteforce_header_frame = Frame(self.top, bg="#909090")
+        self.bruteforce_header_frame.grid(row=0, column=0, sticky="nsew")
+        self.label = Label(self.bruteforce_header_frame, text="Automatisation des requêtes", font=("Arial", 16))
+        self.label.pack(pady=20)
 
 
-        label = Label(self.top, text="Automatisation des requêtes", font=("Arial", 16))
-        label.pack(pady=20)
+        # Frame pour les champs d'entrée de la fenêtre d'automatisation
+        self.bruteforce_main_frame = Frame(self.top, bg="#909090")
+        self.bruteforce_main_frame.grid(row=1, column=0, sticky="nsew")
 
-        # Ajouter ici les éléments de l'interface pour l'automatisation
+        self.bruteforce_main_frame.grid_rowconfigure(0, weight=0)
+        self.bruteforce_main_frame.grid_rowconfigure(1, weight=1)
+        self.bruteforce_main_frame.grid_rowconfigure(2, weight=0)
+        self.bruteforce_main_frame.grid_rowconfigure(3, weight=0)
+        self.bruteforce_main_frame.grid_rowconfigure(4, weight=0)
+        self.bruteforce_main_frame.grid_columnconfigure(0, weight=1)
+        self.bruteforce_main_frame.grid_columnconfigure(1, weight=1)
 
-        close_button = ttk.Button(self.top, text="Fermer", command=self.top.destroy)
-        close_button.pack(pady=10)
+
+        self.label_bruteforce_url = Label(self.bruteforce_main_frame, text="Url", font=("Arial", 14))
+        self.label_bruteforce_url.grid(row=3,column=1, pady=10, sticky="w")
+
+        self.bruteforce_url = Entry(self.bruteforce_main_frame, fg = "black", bg="#FFFFFF", font = ("Arial", 14), width=50)
+        self.bruteforce_url.grid(row=4,column=1, pady=10, sticky="w")
+
+
+        self.list_password = Text(self.bruteforce_main_frame, fg = "black", bg="#C0C0C0", font = ("Arial", 12), width=80, height=20)
+        self.list_password.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky="nsew")
+
+        def nb_mdp(self):
+            lines = self.list_password.get("1.0", "end-1c").splitlines()
+            nb_password = [line for line in lines if line.strip()]
+            return len(nb_password)
+
+        
+
+        self.label_bruteforce_key = Label(self.bruteforce_main_frame, text="Clé de bruteforce", font=("Arial", 14))
+        self.label_bruteforce_key.grid(row=0, column=1, pady=10, sticky="w")
+
+        
+
+        self.bruteforce_key = Entry(self.bruteforce_main_frame, fg = "black", bg="#FFFFFF", font = ("Arial", 14), width=50)
+        self.bruteforce_key.grid(row=1, column=1, pady=10)
+
+
+        self.execute_button = ttk.Button(self.bruteforce_main_frame, text="Exécuter", command=lambda: bruteforce(self))
+        self.execute_button.grid(row=2, column=1, pady=10)
+
+        
+
+        #boucle pour executer le bruteforce
+        def bruteforce(self):
+            self.key = self.bruteforce_key.get()
+            self.key2_obligatoire = self.bruteforce_key2.get()
+            self.url = self.bruteforce_url.get()
+            self.nb_password = str(nb_mdp(self))
+            print(f"Nombre de mots de passe à tester : {self.nb_password}")
+            print(f"Clé de bruteforce : {self.key}")
+            passwords = [line.strip()for line in self.list_password.get("1.0", "end-1c").splitlines()if line.strip()]
+            print(f"Test des mots de passe : {passwords}")
+            
+            
+                
+            for password in passwords:
+                data = {self.key: password, self.key2_obligatoire: "application"}
+                status_code, response_content , response_headers, response_cookies, longueur = self.api.post(self.url, query=data)
+                print(f"Test du mot de passe : {password} - Longueur de la réponse : {longueur}")
+                #print(response_content)
+
+
+        
+        self.footer_frame = Frame(self.top, bg="#909090")
+        self.footer_frame.grid(row=2, column=0, sticky="nsew")
+
+
+        self.footer_frame.grid_rowconfigure(0, weight=1)
+        self.footer_frame.grid_rowconfigure(1, weight=0)
+        self.footer_frame.grid_rowconfigure(2, weight=0)
+
+        self.label_bruteforce_key2 = Label(self.footer_frame, text="Clé de bruteforce 2 (optionnelle)", font=("Arial", 14))
+        self.label_bruteforce_key2.grid(row=0, column=0, pady=10, sticky="w")
+
+        self.bruteforce_key2 = Entry(self.footer_frame, fg = "black", bg="#FFFFFF", font = ("Arial", 14), width=50)
+        self.bruteforce_key2.grid(row=1, column=0, pady=10)
+        
+        close_button = ttk.Button(self.footer_frame, text="Fermer", command=self.top.destroy)
+        close_button.grid(row=2, pady=10)

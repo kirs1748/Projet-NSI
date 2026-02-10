@@ -12,7 +12,8 @@ class ApiClient :
 
     def post(self, url, params=None, headers=None, query=None):
         r = requests.post(url, params=params, headers=headers, data=query)
-        return r.status_code, r.content, r.headers, r.cookies
+        longueur = len(r.content)
+        return r.status_code, r.content, r.headers, r.cookies, longueur
 
     def put(self, url, params=None, headers=None, query=None):
         r = requests.put(url, params=params, headers=headers, data=query)
