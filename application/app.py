@@ -289,13 +289,14 @@ class App:
         self.bruteforce_key1.pack()
 
         # Clé secondaire
-        Label(self.right_frame, text="Clé bruteforce 2 (optionnelle)").pack()
+        Label(self.right_frame, text="Clé bruteforce 2 (mettre la valeur de la clé à ne pas tester)").pack()
         self.bruteforce_key2 = Entry(self.right_frame, width=50)
         self.bruteforce_key2.pack()
 
         # Valeur clé secondaire
-        Label(self.right_frame, text="Valeur clé 2").pack()
+        Label(self.right_frame, text="Valeur clé 2 (a complété par l'username trouvé)").pack()
         self.bruteforce_value2 = Entry(self.right_frame, width=50)
+        self.bruteforce_value2.insert(0, "test")
         self.bruteforce_value2.pack()
 
         def bruteforce():
