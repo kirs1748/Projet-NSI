@@ -132,6 +132,26 @@ class App:
         self.response_text = Text(right, height=25)
         self.response_text.pack(fill=BOTH, expand=True, pady=(8, 0))
 
+        self.response_text.config(state="disabled")
+
+        # ===== HEADERS  =====
+        self.frame_headers = ttk.LabelFrame(right, text="Response Headers")
+        self.frame_headers.pack(fill="both", expand=True, pady=(10, 0))
+
+        self.headers_scroll = Scrollbar(self.frame_headers)
+        self.headers_scroll.pack(side=RIGHT, fill=Y)
+
+        self.response_headers_text = Text(
+            self.frame_headers,
+            height=20,  
+            yscrollcommand=self.headers_scroll.set
+        )
+        self.response_headers_text.pack(fill="both", expand=True)
+
+        self.headers_scroll.config(command=self.response_headers_text.yview)
+
+        self.response_headers_text.config(state="disabled")
+
     # ================= PARAMÈTRES =================
 
     def change_param_type(self, value):
@@ -239,6 +259,11 @@ class App:
         self.status_label.config(
             text=f"Status: {self.response_data['status']}"
         )
+
+        self.response_headers_text.config(state="normal")
+        self.response_headers_text.delete("1.0", END)
+        self.response_headers_text.insert("1.0", self.response_data["headers"])
+        self.response_headers_text.config(state="disabled")
 
     # ================= AUTOMATISATION =================
 
